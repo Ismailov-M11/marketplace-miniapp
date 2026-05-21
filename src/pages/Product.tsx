@@ -15,9 +15,12 @@ function formatPrice(tiyins: number) {
 
 interface ProductVariant {
   id: number;
-  name: string;
+  name_uz?: string | null;
+  name_ru?: string | null;
   price: number;
+  old_price?: number | null;
   stock_quantity: number;
+  is_active: boolean;
 }
 
 interface ProductDetail {
@@ -44,7 +47,8 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (product?.variants.length && !selectedVariant) {
-      setSelectedVariant(product.variants[0]);
+      const def = product.variants.find((v) => v.is_active) ?? product.variants[0];
+      setSelectedVariant(def);
     }
   }, [product]);
 
@@ -56,7 +60,7 @@ export default function ProductPage() {
       variantId: selectedVariant.id,
       productId: product.id,
       productName: product.name_uz,
-      variantName: selectedVariant.name,
+      variantName: selectedVariant.name_uz || selectedVariant.name_ru || "",
       price: selectedVariant.price,
       imageUrl: product.images[0]?.url,
     });
@@ -130,7 +134,7 @@ export default function ProductPage() {
           <div className="mt-4">
             <p className="text-sm font-medium text-tg-hint mb-2">Variant tanlash</p>
             <div className="flex flex-wrap gap-2">
-              {product.variants.map((v) => (
+              {product.variants.filter((v) => v.is_active).map((v) => (
                 <button
                   key={v.id}
                   onClick={() => { haptic.selection(); setSelectedVariant(v); }}
@@ -143,7 +147,7 @@ export default function ProductPage() {
                       : "bg-tg-section text-tg-text border-gray-200"
                   }`}
                 >
-                  {v.name} — {formatPrice(v.price)}
+                  {v.name_uz || v.name_ru || "Variant"} — {formatPrice(v.price)}
                 </button>
               ))}
             </div>
